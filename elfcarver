@@ -1,0 +1,28 @@
+#!/bin/bash
+# name:	elfcarver
+# author:	ortizimo
+# date:	20260928
+# version:	1.0
+# desc:	ELF unpacker to extract payloads
+
+FILE1="$1" # source ELF
+FILE2="${FILE1}.unpacked.elf"	# dropped from 'kiteshear_unpack'
+FILE3="extracted_payload.elf"	# final payload carved out
+
+if [ -z "$FILE1" ]; then
+	echo -e "\033[1mUsage: elfcarver <file>\033[0m"
+	exit 1
+fi
+
+kiteshear_unpack $FILE1	# this python script and dependencies must be installed
+OFFSET=$(grep -aboF $'\x7fELF' "$FILE2" | cut -d: -f1 | sed -n '2p') # gets offset as decimal number
+xxd -s "$OFFSET" -p "$FILE2" | xxd -r -p > "$FILE3" #uses decimal number and deletes everything before it leaving the second ELF (payload) 
+echo "-----------------------------------------------------------"
+echo "Your file: $(file "$FILE3")" # checks to see if its an ELF or not
+echo "-----------------------------------------------------------"
+echo "MD5: $(md5sum "$FILE3")"
+echo "-----------------------------------------------------------"
+
+
+
+
